@@ -35,13 +35,14 @@ last_dig_s1_for_substr_start:
     mov     dh, [ebx]
     mov     dl, [ecx]
     test    dh, dh
-    jz      last_dig_s1_for_substr_start_from_first
+    jz      last_dig_s1_for_substr_last_byte
     cmp     dh, dl
     je      last_dig_s1_for_substr_step
+last_dig_s1_for_substr_last_byte:
     mov     ebx, [ebp + 16] ; s1
     add     ebx, eax
     cmp     dh, dl                                                  ; or actually not should
-    ja      last_dig_s1_for_substr_start_from_first
+    jae     last_dig_s1_for_substr_start_from_first
     inc     ebx
     mov     byte [ebp  - 18], 1
 last_dig_s1_for_substr_start_from_first:
