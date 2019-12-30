@@ -50,18 +50,21 @@ last_dig_s1_for_substr_start_from_first:
     mov     eax, [ebp + 12]
     mov     [ebp - 16], eax ; addr of current byte in result
 
+    mov     byte [eax], '0'
 
+    jmp     main_loop
+main_loop_next:
+    mov     eax, [ebp  - 12]
+    mov     dh, [eax]
+    test    dh, dh
+    jz      exit_func
+    mov     edx, [ebp - 16] ; addr of byte for writing into result
+    mov     byte [edx], '0'
 main_loop:                  ; s1 - eax; s2 - ebx
     mov     eax, [ebp  - 12]
     mov     ebx, [ebp - 4]
     mov     byte [ebp  - 17], 0  ; carry flag
     mov     ecx, [ebp - 8]  ; length of s2
-
-    mov     dh, [eax]
-    test    dh, dh
-    jz      exit_func
-    mov     byte [ebp - 16], '0'
-
 nested_loop:
     mov     dh, [eax] 
     mov     dl, [ebx]
@@ -91,6 +94,11 @@ nested_loop_can_sub:
     dec     ebx
     loop    nested_loop
 
+    mov     ecx, [ebp - 16] ; current byte of result (addr)
+    mov     dl, [ecx]
+    inc     dl   
+    mov     [ecx], dl
+
 
     cmp     byte [ebp - 17], 0  ; carry flag
     je      main_loop
@@ -104,6 +112,11 @@ nested_loop_can_sub:
     jmp     main_loop
 
 nested_loop_uncorrect_sub:
+    mov     ecx, [ebp - 16] ; current byte of result (addr)
+    mov     dl, [ecx]
+    dec     dl
+    mov     [ecx], dl
+
     mov     eax, [ebp  - 12]
     mov     ebx, [ebp - 4]
     mov     byte [ebp  - 17], 0  ; carry flag
@@ -127,10 +140,10 @@ nested_loop_uncorrect_sub_without_carry:
     dec     ebx
     loop    nested_loop_uncorrect_sub_step
 
-main_loop_next:
     inc     dword [ebp - 12]
+    inc     dword [ebp - 16]
     mov     byte [ebp - 18], 1  ; has digit on left flag
-    jmp     main_loop
+    jmp     main_loop_next
 
 exit_func:
     mov     eax, [ebp + 16]
