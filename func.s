@@ -9,7 +9,19 @@ sdiv:
                             ; for addr of byte of result for wiriting new digit - 4 bytes (ebp - 16)
                             ; carry flag - 1 byte (ebp  - 17) 
                             ; has digit on left flag - 1 byte (ebp  - 18)
+                            ; length(s1) == length(s2) flag - 1 byte (ebp - 19)
 
+    mov     byte [ebp - 19], 0
+    
+    mov     ebx, [ebp + 16] ; s1
+divident_length_step:
+    mov     dl, [ebx]
+    inc     ebx
+    test    dl, dl
+    jnz     divident_length_step
+    sub     ebx, 2          ; ebx contains addr of byte with last digit in s1
+    sub     ebx, [ebp + 16] ; ebx contains length-1 of s1
+    
     mov     eax, [ebp + 20] ; s2
 divisor_length_step:
     mov     dl, [eax]
@@ -18,12 +30,21 @@ divisor_length_step:
     jnz     divisor_length_step
     sub     eax, 2           ; eax contains addr of byte with last digit in s2
     mov     [ebp - 4], eax  
-
     sub     eax, [ebp + 20] ; eax contains length-1 of s2 
     inc     eax
     mov     [ebp - 8], eax
     dec     eax
 
+    mov     edx, [ebp + 12]
+    mov     [ebp - 16], edx ; addr of current byte in result
+    mov     byte [edx], '0'
+
+    cmp     ebx, eax        ; ebx - s1, eax - s2
+    ja      correct_length_of_arg
+    jb      exit_func
+    mov     byte [ebp - 19], 1
+
+correct_length_of_arg:
     mov     ebx, [ebp + 16] ; s1
     mov     ecx, [ebp + 20] ; s2
     mov     byte [ebp  - 18], 0
@@ -43,15 +64,14 @@ last_dig_s1_for_substr_last_byte:
     add     ebx, eax
     cmp     dh, dl                                                  ; or actually not should
     jae     last_dig_s1_for_substr_start_from_first
+    
+    cmp     byte [ebp - 19], 1  ; s1 length = s2 length
+    je      exit_func
+
     inc     ebx
     mov     byte [ebp  - 18], 1
 last_dig_s1_for_substr_start_from_first:
     mov     [ebp  - 12], ebx
-
-    mov     eax, [ebp + 12]
-    mov     [ebp - 16], eax ; addr of current byte in result
-
-    mov     byte [eax], '0'
 
     jmp     main_loop
 main_loop_next:
@@ -68,6 +88,7 @@ main_loop:                  ; s1 - eax; s2 - ebx
     mov     ecx, [ebp - 8]  ; length of s2
 nested_loop:
     mov     dh, [eax] 
+
     mov     dl, [ebx]
     sub     dh, '0'
     sub     dl, '0'
