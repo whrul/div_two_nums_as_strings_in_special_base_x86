@@ -9,11 +9,11 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     int base = atoi(argv[1]);
-    if (base <= 0 || base > 10) { // for now only 10; also should check strings for illegal numbers also check s2 == 0 and s1<S2
-        printf("Wrong base format.\n");
+    if (base <= 0 || base > 10) { // for now only 10; also should check strings for illegal numbers also check s2 == 0 and s1<S2 ; in main check length > 0 should? from input cmd; remove 0 at the begining?
+        printf("Wrong base format.\n"); 
         return 0;
     }
-    size_t sizeInBytes = 10;
+    size_t sizeInBytes = 10; // s1 length
     char *result = (char*) malloc(sizeInBytes);
     if (result == NULL) {
         printf("Cannot alloc memory for result.\n");
