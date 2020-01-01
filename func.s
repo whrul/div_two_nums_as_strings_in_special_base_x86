@@ -25,6 +25,7 @@ divident_length_step:
     sub     ebx, [ebp + 16]                 ; ebx contains length-1 of s1
     
     mov     eax, [ebp + 20]                 ; s2
+    mov     ecx, eax
 divisor_length_step:
     mov     dl, [eax]
     inc     eax
@@ -33,6 +34,17 @@ divisor_length_step:
     sub     eax, 2                          ; eax contains addr of byte with last digit in s2
     mov     [ebp - 4], eax  
     sub     eax, [ebp + 20]                 ; eax contains length-1 of s2 
+
+divisor_zeros_at_beg_length_to_ignore_step:
+    mov     dl, [ecx]
+    inc     ecx
+    test    dl, dl
+    jz      exit_func
+    cmp     dl, '0'                
+    je      divisor_zeros_at_beg_length_to_ignore_step
+    dec     ecx                             ; ecx contains addr of first not '0' byte in s2
+    sub     ecx, [ebp + 20]                 ; ecx contains number of '0' at the beginning of s2
+    sub     eax, ecx
     inc     eax
     mov     [ebp - 8], eax
     dec     eax
