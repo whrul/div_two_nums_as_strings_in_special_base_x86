@@ -1,7 +1,11 @@
 #include <stdio.h> // NULL
 #include <stdlib.h> // atoi, malloc
+// #include <assert.h>
 
 char *sdiv(unsigned int base, char *result, char *s1, char *s2); // remainder into s1
+// void sdivTest(unsigned int base, char *result, char *s1, char *s2 );
+// void makeTests(char *result);
+
 
 int main(int argc, char *argv[]) {
     if (argc < 4) {
@@ -13,7 +17,7 @@ int main(int argc, char *argv[]) {
         printf("Wrong base format.\n"); 
         return 0;
     }
-    size_t sizeInBytes = 10; // s1 length
+    size_t sizeInBytes = 16; // s1 length
     char *result = (char*) malloc(sizeInBytes);
     if (result == NULL) {
         printf("Cannot alloc memory for result.\n");
@@ -22,6 +26,18 @@ int main(int argc, char *argv[]) {
     // printf("%s\n", sdiv((unsigned int)base, result, argv[2], argv[3]));
     sdiv((unsigned int)base, result, argv[2], argv[3]);
     printf("Result: %s\nRemainder: %s\n", result, argv[2]);
+    
+    // char *testsResult = (char*) malloc(512);
+    // if (testsResult != NULL) {
+        // makeTests(testsResult);
+        // free(testsResult);
+    // }
+
+    free(result);
     return 0;
 }
+
+// void makeTests(char *result) {
+    // 
+// }
 
