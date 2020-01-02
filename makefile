@@ -9,8 +9,24 @@ main.o : main.c
 func.o: func.s
 	nasm -f elf32 func.s
 
-.PHONY: clean
+.PHONY: clean, tests
 clean:
 	rm -f *.o
 	rm -f *.out
+tests: $(TARGET)
+	./$(TARGET) 10 7 0
+	./$(TARGET) 10 7 1
+	./$(TARGET) 10 7 5
+	./$(TARGET) 10 7 7
+	./$(TARGET) 10 7 9
+	./$(TARGET) 10 7 90
+	./$(TARGET) 10 7 0000000003
+	./$(TARGET) 10 000000007 3
+	
+	./$(TARGET) 2 101 10
 
+	./$(TARGET) 16 f a
+	./$(TARGET) 16 F A
+	./$(TARGET) 16 F a
+	./$(TARGET) 16 f A
+	./$(TARGET) 16 Ff 5

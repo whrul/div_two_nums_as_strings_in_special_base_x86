@@ -11,7 +11,6 @@ sdiv:
                             ; has digit on left flag - 1 byte (ebp  - 18)
                             ; length(s1) == length(s2) flag - 1 byte (ebp - 19)
 
-
 ; --------------------- check input lengthes for detecting s1 < s2 situation  BEGIN -------------------------------------------
 
     mov     byte [ebp - 19], 0              ; length(s1) == length(s2) flag    
@@ -74,6 +73,19 @@ last_dig_s1_for_substr_step:
 last_dig_s1_for_substr_start:
     mov     dh, [ebx]
     mov     dl, [ecx]
+;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
+    cmp     dh, 'a'
+    jb      last_dig_s1_for_substr_s1_not_low_case_let
+    sub     dh, 'a'
+    add     dh, 'A'
+last_dig_s1_for_substr_s1_not_low_case_let:
+
+    cmp     dl, 'a'
+    jb      last_dig_s1_for_substr_s2_not_low_case_let
+    sub     dl, 'a'
+    add     dl, 'A'
+last_dig_s1_for_substr_s2_not_low_case_let:
+;------------------------additional corrections for systems with base > 10 END------------------------------
     test    dh, dh
     jz      last_dig_s1_for_substr_last_byte
     cmp     dh, dl
@@ -112,9 +124,29 @@ main_loop:                                  ; s1 - eax; s2 - ebx
     mov     ecx, [ebp - 8]                  ; length of s2
 nested_loop:
     mov     dh, [eax] 
-
     mov     dl, [ebx]
-    sub     dh, '0'
+;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
+    cmp     dh, 'a'
+    jb      nested_loop_s1_not_low_case_let
+    sub     dh, 'a'
+    add     dh, 'A'
+nested_loop_s1_not_low_case_let:
+    cmp     dh, 'A'
+    jb      nested_loop_s1_not_let
+    sub     dh, 7                                                           ; 'A' - '9' + 1
+nested_loop_s1_not_let:
+
+    cmp     dl, 'a'
+    jb      nested_loop_s2_not_low_case_let
+    sub     dl, 'a'
+    add     dl, 'A'
+nested_loop_s2_not_low_case_let:
+    cmp     dl, 'A'
+    jb      nested_loop_s2_not_let
+    sub     dl, 7                                                           ; 'A' - '9' + 1
+nested_loop_s2_not_let:
+;------------------------additional corrections for systems with base > 10 END------------------------------
+    sub     dh, '0' 
     sub     dl, '0'
     cmp     byte [ebp  - 17], 0             ; carry flag
     je      nested_loop_was_not_carry
@@ -133,6 +165,12 @@ nested_loop_was_not_carry:
     mov     byte [ebp - 17], 1              ; carry flag
 nested_loop_can_sub:
     sub     dh, dl
+;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
+    cmp     dh, 10
+    jb      nested_loop_not_let
+    add     byte dh, 7                                                            ; 'A' - '9' + 1
+;------------------------additional corrections for systems with base > 10 END------------------------------
+nested_loop_not_let:
     add     dh, '0'
     mov     [eax], dh
 
@@ -170,6 +208,27 @@ nested_loop_uncorrect_sub:
 nested_loop_uncorrect_sub_step:
     mov     dh, [eax]
     mov     dl, [ebx]
+;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
+    cmp     dh, 'a'
+    jb      nested_loop_uncorrect_sub_s1_not_low_case_let
+    sub     dh, 'a'
+    add     dh, 'A'
+nested_loop_uncorrect_sub_s1_not_low_case_let:
+    cmp     dh, 'A'
+    jb      nested_loop_uncorrect_sub_s1_not_let
+    sub     dh, 7                                                           ; 'A' - '9' + 1
+nested_loop_uncorrect_sub_s1_not_let:
+
+    cmp     dl, 'a'
+    jb      nested_loop_uncorrect_sub_s2_not_low_case_let
+    sub     dl, 'a'
+    add     dl, 'A'
+nested_loop_uncorrect_sub_s2_not_low_case_let:
+    cmp     dl, 'A'
+    jb      nested_loop_uncorrect_sub_s2_not_let
+    sub     dl, 7                                                           ; 'A' - '9' + 1
+nested_loop_uncorrect_sub_s2_not_let:
+;------------------------additional corrections for systems with base > 10 END------------------------------
     sub     dh, '0'
     sub     dl, '0'
     add     dh, dl
@@ -180,6 +239,12 @@ nested_loop_uncorrect_sub_step:
     mov     byte [ebp - 17], 1
     sub     dh, [ebp + 8]
 nested_loop_uncorrect_sub_without_carry:
+;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
+    cmp     dh, 10
+    jb      nested_loop_uncorrect_sub_not_let
+    add     byte dh, 7                                                            ; 'A' - '9' + 1
+;------------------------additional corrections for systems with base > 10 END------------------------------
+nested_loop_uncorrect_sub_not_let:
     add     dh, '0'
     mov     [eax], dh
     dec     eax
