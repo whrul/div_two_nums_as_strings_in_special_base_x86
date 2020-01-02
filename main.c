@@ -1,5 +1,6 @@
 #include <stdio.h> // NULL
 #include <stdlib.h> // atoi, malloc
+#include <string.h> // strlen
 
 char *sdiv(unsigned int base, char *result, char *s1, char *s2); // remainder into s1
 
@@ -13,13 +14,14 @@ int main(int argc, char *argv[]) {
         printf("Wrong base format.\n"); 
         return 0;
     }
-    size_t sizeInBytes = 1024; // s1 length
+    size_t sizeInBytes = strlen(argv[2]) + 1;
     char *result = (char*) malloc(sizeInBytes);
     if (result == NULL) {
         printf("Cannot alloc memory for result.\n");
         return 0;
     }
-    // printf("%s\n", sdiv((unsigned int)base, result, argv[2], argv[3]));
+    // argv[2] = "";
+    // argv[3] = "123123";     segmentation fault
     sdiv((unsigned int)base, result, argv[2], argv[3]);
     printf("Result: %s\nRemainder: %s\n\n", result, argv[2]);
     free(result);

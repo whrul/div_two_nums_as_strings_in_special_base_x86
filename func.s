@@ -38,7 +38,7 @@ divisor_zeros_at_beg_length_to_ignore_step:
     mov     dl, [ecx]
     inc     ecx
     test    dl, dl
-    jz      exit_func
+    jz      exit_func_div_by_zero
     cmp     dl, '0'                
     je      divisor_zeros_at_beg_length_to_ignore_step
     dec     ecx                             ; ecx contains addr of first not '0' byte in s2
@@ -54,7 +54,7 @@ divisor_zeros_at_beg_length_to_ignore_step:
 
     cmp     ebx, eax                        ; ebx - s1, eax - s2
     ja      correct_length_of_arg
-    jb      exit_func
+    jb      exit_func_with_moving_for_zero
     mov     byte [ebp - 19], 1
 
 ; --------------------- check input lengthes for detecting s1 < s2 situation END -------------------------------------------
@@ -97,7 +97,7 @@ last_dig_s1_for_substr_last_byte:
     jae     last_dig_s1_for_substr_start_from_first
     
     cmp     byte [ebp - 19], 1              ; s1 length = s2 length flag
-    je      exit_func
+    je      exit_func_with_moving_for_zero
 
     inc     ebx
     mov     byte [ebp  - 18], 1
@@ -114,7 +114,7 @@ main_loop_next:
     mov     eax, [ebp  - 12]
     mov     dh, [eax]
     test    dh, dh
-    jz      exit_func
+    jz      exit_func_without_moving_for_zero
     mov     edx, [ebp - 16]                 ; addr of byte for writing into result
     mov     byte [edx], '0'
 main_loop:                                  ; s1 - eax; s2 - ebx
@@ -252,16 +252,32 @@ nested_loop_uncorrect_sub_not_let:
     loop    nested_loop_uncorrect_sub_step
 
     inc     dword [ebp - 12]
+;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
+    mov     eax, [ebp - 16]
+    mov     dl, [eax]
+    cmp     dl, '9'
+    jbe     is_smaller_than_ten
+    add     dl, 7                                                                   ; 'A' - '9' + 1
+is_smaller_than_ten:
+    mov     [eax], dl
+;------------------------additional corrections for systems with base > 10 END------------------------------
     inc     dword [ebp - 16]
     mov     byte [ebp - 18], 1              ; has digit on left flag
     jmp     main_loop_next
 
 ;---------------------- main logic END ---------------------------------------------
 
-exit_func:
-    mov     eax, [ebp + 16]
+exit_func_div_by_zero:
+    mov     eax, [ebp + 12]                 ; result
+    mov     [ebp - 16], eax
+    jmp     exit_func_without_moving_for_zero
+exit_func_with_moving_for_zero:
+    inc     dword [ebp - 16]
+exit_func_without_moving_for_zero:
+    mov     eax, [ebp - 16]
+    mov     byte [eax], 0
+    mov     eax, [ebp + 12]                 ; result
     mov     esp, ebp        
     pop     ebp             
     ret 
-    
 

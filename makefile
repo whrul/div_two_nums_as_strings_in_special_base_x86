@@ -30,3 +30,4 @@ tests: $(TARGET)
 	./$(TARGET) 16 F a
 	./$(TARGET) 16 f A
 	./$(TARGET) 16 Ff 5
+	./$(TARGET) 16 1f 2
