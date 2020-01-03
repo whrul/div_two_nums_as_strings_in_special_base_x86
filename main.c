@@ -2,9 +2,10 @@
 #include <stdlib.h> // atoi, malloc
 #include <string.h> // strlen
 
-
 char *sdiv(unsigned int base, char *result, char *s1, char *s2); // remainder into s1
 char toLower(const char c);
+short int isDigit(const char c);
+short int isCorrectNum(char *s, unsigned int base); 
 
 int main(int argc, char *argv[]) {
     if (argc < 4) {
@@ -16,23 +17,11 @@ int main(int argc, char *argv[]) {
         printf("Wrong base format.\n"); 
         return 0;
     }
-    for (size_t i = 0; i < strlen(argv[2]); ++i) {
-        if (argv[2][i] >= '0' && argv[2][i] <= '9') {
-            continue;
-        }
-        if (toLower(argv[2][i]) >= 'a' && toLower(argv[2][i]) <= 'a' + base - 11) {
-            continue;
-        }
+    if(!isCorrectNum(argv[2], base)) {
         printf("Wrong s1 format.\n"); 
         return 0;
     }
-    for (size_t i = 0; i < strlen(argv[3]); ++i) {
-        if (argv[3][i] >= '0' && argv[3][i] <= '9') {
-            continue;
-        }
-        if (toLower(argv[3][i]) >= 'a' && toLower(argv[3][i]) <= 'a' + base - 11) {
-            continue;
-        }
+    if(!isCorrectNum(argv[3], base)) {
         printf("Wrong s2 format.\n"); 
         return 0;
     }
@@ -55,6 +44,25 @@ char toLower(const char c) {
     return c;
 }
 
+short int isDigit(const char c) {
+    return c >= '0' && c <= '9';
+}
+
+short int isCorrectNum(char *s, unsigned int base) {
+    for (size_t i = 0; i < strlen(s); ++i) {
+        if (isDigit(s[i])) {
+            if (s[i] >= '0' + base) {
+                return 0;
+            }
+        } else {
+            if (toLower(s[i]) >= 'a' + base - 10 || toLower(s[i]) < 'a') {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+
 // argv[2] = "";
 // argv[3] = "xxx";     segmentation fault
-
