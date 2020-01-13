@@ -1,7 +1,6 @@
     section .text
     global sdiv
 sdiv:
-    push    ebx
     push    ebp             
     mov     ebp, esp        
     sub     esp, 12         
@@ -13,21 +12,23 @@ sdiv:
                             
                             ; for addr of current byte in s1, which is last in substraction - 4 bytes (esi)
                             ; for addr of last digit in s2 - 4 bytes (edi)
-
+    push    ebx
+    push    esi
+    push    edi
 
 ; --------------------- check input lengthes for detecting s1 < s2 situation  BEGIN -------------------------------------------
 
     mov     byte [ebp - 11], 0              ; length(s1) == length(s2) flag    
-    mov     ebx, [ebp + 20]                 ; s1
+    mov     ebx, [ebp + 16]                 ; s1
 divident_length_step:
     mov     dl, [ebx]
     inc     ebx
     test    dl, dl
     jnz     divident_length_step
     sub     ebx, 2                          ; ebx contains addr of byte with last digit in s1
-    sub     ebx, [ebp + 20]                 ; ebx contains length-1 of s1
+    sub     ebx, [ebp + 16]                 ; ebx contains length-1 of s1
     
-    mov     eax, [ebp + 24]                 ; s2
+    mov     eax, [ebp + 20]                 ; s2
     mov     ecx, eax
 divisor_length_step:
     mov     dl, [eax]
@@ -36,7 +37,7 @@ divisor_length_step:
     jnz     divisor_length_step
     sub     eax, 2                          ; eax contains addr of byte with last digit in s2
     mov     edi, eax  
-    sub     eax, [ebp + 24]                 ; eax contains length-1 of s2 
+    sub     eax, [ebp + 20]                 ; eax contains length-1 of s2 
 
 divisor_zeros_at_beg_length_to_ignore_step:
     mov     dl, [ecx]
@@ -46,13 +47,13 @@ divisor_zeros_at_beg_length_to_ignore_step:
     cmp     dl, '0'                
     je      divisor_zeros_at_beg_length_to_ignore_step
     dec     ecx                             ; ecx contains addr of first not '0' byte in s2
-    sub     ecx, [ebp + 24]                 ; ecx contains number of '0' at the beginning of s2
+    sub     ecx, [ebp + 20]                 ; ecx contains number of '0' at the beginning of s2
     sub     eax, ecx
     inc     eax
     mov     [ebp - 4], eax
     dec     eax
 
-    mov     edx, [ebp + 16]
+    mov     edx, [ebp + 12]
     mov     [ebp - 8], edx                 ; addr of current byte in result
     mov     byte [edx], '0'
 
@@ -67,8 +68,8 @@ divisor_zeros_at_beg_length_to_ignore_step:
 ;---------------------- set start parametrs BEGIN ----------------------------------
 
 correct_length_of_arg:
-    mov     ebx, [ebp + 20]                 ; s1
-    mov     ecx, [ebp + 24]                 ; s2
+    mov     ebx, [ebp + 16]                 ; s1
+    mov     ecx, [ebp + 20]                 ; s2
     mov     byte [ebp  - 10], 0
     jmp     last_dig_s1_for_substr_start
 last_dig_s1_for_substr_step:
@@ -95,7 +96,7 @@ last_dig_s1_for_substr_s2_not_low_case_let:
     cmp     dh, dl
     je      last_dig_s1_for_substr_step
 last_dig_s1_for_substr_last_byte:
-    mov     ebx, [ebp + 20]                 ; s1, flags affected: none
+    mov     ebx, [ebp + 16]                 ; s1, flags affected: none
     add     ebx, eax                        ; OF, SF, ZF, AF, CF, and PF flags affected
     cmp     dh, dl                          ; set flags one more time before checking it
     jae     last_dig_s1_for_substr_start_from_first
@@ -160,12 +161,12 @@ nested_loop_s2_not_let:
     mov     byte [ebp - 9], 0
     jmp     nested_loop_was_not_carry
 nested_loop_can_not_be_carry:
-    add     dh, [ebp + 12]                   ; base
+    add     dh, [ebp + 8]                   ; base
     dec     dh
 nested_loop_was_not_carry:
     cmp     dh, dl
     jae     nested_loop_can_sub
-    add     dh, [ebp + 12]                   ; base
+    add     dh, [ebp + 8]                   ; base
     mov     byte [ebp - 9], 1               ; carry flag
 nested_loop_can_sub:
     sub     dh, dl
@@ -238,10 +239,10 @@ nested_loop_uncorrect_sub_s2_not_let:
     add     dh, dl
     add     dh, [ebp - 9]                   ; carry
     mov     byte [ebp - 9], 0
-    cmp     dh, [ebp + 12]                   ; base
+    cmp     dh, [ebp + 8]                   ; base
     jb      nested_loop_uncorrect_sub_without_carry
     mov     byte [ebp - 9], 1
-    sub     dh, [ebp + 12]
+    sub     dh, [ebp + 8]
 nested_loop_uncorrect_sub_without_carry:
 ;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
     cmp     dh, 10
@@ -272,7 +273,7 @@ is_smaller_than_ten:
 ;---------------------- main logic END ---------------------------------------------
 
 exit_func_div_by_zero:
-    mov     eax, [ebp + 16]                 ; result
+    mov     eax, [ebp + 12]                 ; result
     mov     [ebp - 8], eax
     jmp     exit_func_without_moving_for_zero
 exit_func_with_moving_for_zero:
@@ -280,9 +281,12 @@ exit_func_with_moving_for_zero:
 exit_func_without_moving_for_zero:
     mov     eax, [ebp - 8]
     mov     byte [eax], 0
-    mov     eax, [ebp + 16]                 ; result
+    mov     eax, [ebp + 12]                 ; result
+    pop     edi
+    pop     esi
+    pop     ebx
     mov     esp, ebp        
-    pop     ebp 
-    pop     ebx            
+    pop     ebp            
     ret 
+
 
