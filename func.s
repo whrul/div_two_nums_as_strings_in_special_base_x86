@@ -123,12 +123,15 @@ main_loop_next:
     mov     edx, [ebp - 8]                  ; addr of byte for writing into result
     mov     byte [edx], '0'
 main_loop:                                  ; s1 - eax; s2 - ebx
-    mov     eax, esi
-    mov     ebx, edi
-    mov     byte [ebp  - 9], 0              ; carry flag
+    
+    push    esi
+    mov     eax, [ebp + 8]                  ; base <= 16 -> al
+    mov     ah, 0                           ; carry flag     
+    mov     ebx, edi                        ; addr of last digit in s2
     mov     ecx, [ebp - 4]                  ; length of s2
+
 nested_loop:
-    mov     dh, [eax] 
+    mov     dh, [esi] 
     mov     dl, [ebx]
 ;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
     cmp     dh, 'a'
@@ -153,21 +156,21 @@ nested_loop_s2_not_let:
 ;------------------------additional corrections for systems with base > 10 END------------------------------
     sub     dh, '0' 
     sub     dl, '0'
-    cmp     byte [ebp  - 9], 0              ; carry flag
+    cmp     byte ah, 0              ; carry flag
     je      nested_loop_was_not_carry
     test    dh, dh
     jz      nested_loop_can_not_be_carry
     dec     dh
-    mov     byte [ebp - 9], 0
+    mov     byte ah, 0
     jmp     nested_loop_was_not_carry
 nested_loop_can_not_be_carry:
-    add     dh, [ebp + 8]                   ; base
+    add     dh, al                   ; base
     dec     dh
 nested_loop_was_not_carry:
     cmp     dh, dl
     jae     nested_loop_can_sub
-    add     dh, [ebp + 8]                   ; base
-    mov     byte [ebp - 9], 1               ; carry flag
+    add     dh, al                   ; base
+    mov     byte ah, 1               ; carry flag
 nested_loop_can_sub:
     sub     dh, dl
 ;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
@@ -177,11 +180,15 @@ nested_loop_can_sub:
 ;------------------------additional corrections for systems with base > 10 END------------------------------
 nested_loop_not_let:
     add     dh, '0'
-    mov     [eax], dh
+    mov     [esi], dh
 
-    dec     eax
+    dec     esi
     dec     ebx
     loop    nested_loop
+
+    mov     byte [ebp - 9], ah
+    mov     eax, esi
+    pop     esi
 
     mov     ecx, [ebp - 8]                 ; current byte of result (addr)
     mov     dl, [ecx]
@@ -206,12 +213,13 @@ nested_loop_uncorrect_sub:
     dec     dl
     mov     [ecx], dl
 
-    mov     eax, esi
-    mov     ebx, edi
-    mov     byte [ebp  - 9], 0              ; carry flag
+    push     esi
+    mov     ebx, edi                  
+    mov     eax, [ebp + 8]                  ; base <= 16 -> al
+    mov     ah, 0                           ; carry flag     
     mov     ecx, [ebp - 4]                  ; length of s2
 nested_loop_uncorrect_sub_step:
-    mov     dh, [eax]
+    mov     dh, [esi]
     mov     dl, [ebx]
 ;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
     cmp     dh, 'a'
@@ -237,12 +245,12 @@ nested_loop_uncorrect_sub_s2_not_let:
     sub     dh, '0'
     sub     dl, '0'
     add     dh, dl
-    add     dh, [ebp - 9]                   ; carry
-    mov     byte [ebp - 9], 0
-    cmp     dh, [ebp + 8]                   ; base
+    add     dh, ah                   ; carry
+    mov     byte ah, 0
+    cmp     dh, al                   ; base
     jb      nested_loop_uncorrect_sub_without_carry
-    mov     byte [ebp - 9], 1
-    sub     dh, [ebp + 8]
+    mov     byte ah, 1
+    sub     dh, al
 nested_loop_uncorrect_sub_without_carry:
 ;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
     cmp     dh, 10
@@ -251,11 +259,12 @@ nested_loop_uncorrect_sub_without_carry:
 ;------------------------additional corrections for systems with base > 10 END------------------------------
 nested_loop_uncorrect_sub_not_let:
     add     dh, '0'
-    mov     [eax], dh
-    dec     eax
+    mov     [esi], dh
+    dec     esi
     dec     ebx
     loop    nested_loop_uncorrect_sub_step
 
+    pop     esi
     inc     esi
 ;------------------------additional corrections for systems with base > 10 BEGIN----------------------------
     mov     eax, [ebp - 8]
