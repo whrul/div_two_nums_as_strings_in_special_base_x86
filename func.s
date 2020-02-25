@@ -1,3 +1,5 @@
+; Author: Walerij Hrul
+;
     section .text
     global sdiv
 sdiv:
@@ -20,6 +22,16 @@ sdiv:
 
     mov     byte [ebp - 11], 0              ; length(s1) == length(s2) flag    
     mov     ebx, [ebp + 16]                 ; s1
+
+    mov     dl, [ebx]                       ; finish program if s1 - empty                       
+    test    dl, dl                          ;
+    jnz     divident_length_step            ;
+    ; s1 - empty:                           ;
+    mov     edx, [ebp + 12]                 ; char* result
+    mov     [ebp - 8], edx                  ; addr of current byte in result
+    mov     byte [edx], '0'
+    jmp     exit_func_with_moving_for_zero
+
 divident_length_step:
     mov     dl, [ebx]
     inc     ebx
@@ -70,7 +82,7 @@ divisor_zeros_at_beg_length_to_ignore_step:
 correct_length_of_arg:
     mov     ebx, [ebp + 16]                 ; s1
     mov     ecx, [ebp + 20]                 ; s2
-    mov     byte [ebp  - 10], 0
+    mov     byte [ebp  - 10], 0             ; has digit on left flag
     jmp     last_dig_s1_for_substr_start
 last_dig_s1_for_substr_step:
     inc     ebx
@@ -297,5 +309,3 @@ exit_func_without_moving_for_zero:
     mov     esp, ebp        
     pop     ebp            
     ret 
-
-

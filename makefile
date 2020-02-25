@@ -15,6 +15,7 @@ clean:
 	rm -f *.out
 tests: $(TARGET)
 	./$(TARGET) 10 7 0
+	./$(TARGET) 10 0 7
 	./$(TARGET) 10 7 1
 	./$(TARGET) 10 7 5
 	./$(TARGET) 10 7 7

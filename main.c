@@ -1,3 +1,5 @@
+// Author: Walerij Hrul
+//
 #include <stdio.h> // NULL
 #include <stdlib.h> // atoi, malloc
 #include <string.h> // strlen
@@ -62,7 +64,3 @@ short int isCorrectNum(char *s, unsigned int base) {
     }
     return 1;
 }
-
-
-// argv[2] = "";
-// argv[3] = "xxx";     segmentation fault
